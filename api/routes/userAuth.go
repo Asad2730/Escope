@@ -8,5 +8,5 @@ import (
 func UserAuthRoutes(r *gin.Engine) {
 
 	r.POST("/login", handlers.LoginWithEmailPassword)
-
+	r.POST("/createUser", handlers.CreateUser)
 }
