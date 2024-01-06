@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"github.com/Asad2730/Escope/tree/main/api/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,5 +19,6 @@ func Connect() {
 		panic(err.Error())
 	}
 
+	Db.AutoMigrate(&models.User{})
 	Db = db
 }
