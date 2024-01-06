@@ -7,7 +7,7 @@ export const signUp = createAsyncThunk('auth/signUp',(userData)=>{
     const { data } = axios.postForm('auth/signup',userData);
     return data;
   }catch(error){
-    throw error.response ? error.response.data : error.message || 'An error occurred';
+    return thunkAPI.rejectWithValue(ex.response?.data || ex.message);
   }
 })
 
@@ -17,7 +17,7 @@ export const loginWithFaceID = createAsyncThunk('auth/loginWithFaceID', (userDat
     const { data } = axios.post('',userData);
     return data;
     }catch (error) {
-        throw error.response ? error.response.data : error.message || 'An error occurred';
+      return thunkAPI.rejectWithValue(ex.response?.data || ex.message);
       }
 })
 
@@ -29,6 +29,6 @@ export const loginWithEmailPassword = createAsyncThunk('auth/loginWithEmailPassw
     const { data } = axios.postForm('auth/loginWithEmailPassword',userData);
     return data;
   }catch(error){
-    throw error.response ? error.response.data : error.message || 'An error occurred';
+    return thunkAPI.rejectWithValue(ex.response?.data || ex.message);
   }
 })
