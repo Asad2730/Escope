@@ -1,13 +1,13 @@
 package handlers
 
 import (
+	"encoding/base64"
 	"net/http"
 
-	"github.com/Asad2730/Escope/tree/main/api/connection"
-	"github.com/Asad2730/Escope/tree/main/api/facerecognition"
-	"github.com/Asad2730/Escope/tree/main/api/models"
+	"github.com/Asad2730/Escope/connection"
+	"github.com/Asad2730/Escope/facerecognition"
+	"github.com/Asad2730/Escope/models"
 	"github.com/gin-gonic/gin"
-	"gocv.io/x/gocv"
 )
 
 func CreateUser(c *gin.Context) {
@@ -17,20 +17,14 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Load the image from user.FaceID (assuming it's a file path, adjust as needed)
-
-	img, err := gocv.IMDecode(user.FaceID, gocv.IMReadColor)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unable to decode the image"})
+	// Ensure that the FaceID field is populated with raw binary image data
+	if len(user.FaceID) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "FaceID cannot be empty"})
 		return
 	}
-	defer img.Close()
-
-	facialEncoding := facerecognition.PerformFacialRecognition(img)
-	user.FaceID = facialEncoding
 
 	if err := connection.Db.Create(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -51,32 +45,31 @@ func LoginWithEmailPassword(c *gin.Context) {
 }
 
 func LoginWithFaceID(c *gin.Context) {
+	var loginRequest models.User
+	if err := c.ShouldBindJSON(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert the base64-encoded FaceID string to a byte slice
+	decodedFaceID, err := base64.StdEncoding.DecodeString(string(loginRequest.FaceID))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid base64-encoded FaceID"})
+		return
+	}
 
 	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
+	result := connection.Db.Where("email = ?", loginRequest.Email).First(&user)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	var storedUser models.User
-	if err := connection.Db.Where("email = ?", user.Email).First(&storedUser).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+	// Compare the decodedFaceID with the stored FaceID using facial recognition logic
+	if !facerecognition.CompareFacialEncodings(decodedFaceID, user.FaceID, 0.5) {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid FaceID"})
 		return
 	}
 
-	img, err := gocv.IMDecode(user.FaceID, gocv.IMReadColor)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unable to decode the image"})
-		return
-	}
-	defer img.Close()
-
-	providedFacialEncoding := facerecognition.PerformFacialRecognition(img)
-	threshold := 0.5
-	if !facerecognition.CompareFacialEncodings(storedUser.FaceID, providedFacialEncoding, threshold) {
-		c.JSON(http.StatusUnauthorized, "Facial recognition failed")
-		return
-	}
-
-	c.JSON(http.StatusOK, &storedUser)
+	c.JSON(http.StatusOK, &user)
 }

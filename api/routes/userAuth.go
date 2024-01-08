@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/Asad2730/Escope/tree/main/api/handlers"
+	"github.com/Asad2730/Escope/handlers"
 	"github.com/gin-gonic/gin"
 )
 
