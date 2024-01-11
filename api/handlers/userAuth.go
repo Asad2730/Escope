@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"encoding/base64"
+
 	"net/http"
+	"os"
 
 	"github.com/Asad2730/Escope/connection"
 	"github.com/Asad2730/Escope/facerecognition"
@@ -12,16 +14,20 @@ import (
 
 func CreateUser(c *gin.Context) {
 	var user models.User
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+
+	file, err := c.FormFile("face_id")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
 	}
 
-	// Ensure that the FaceID field is populated with raw binary image data
-	if len(user.FaceID) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "FaceID cannot be empty"})
+	fileContent, err := os.ReadFile(file.Filename)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error reading file": err.Error()})
 		return
 	}
+
+	user.FaceID = fileContent
 
 	if err := connection.Db.Create(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -46,12 +52,11 @@ func LoginWithEmailPassword(c *gin.Context) {
 
 func LoginWithFaceID(c *gin.Context) {
 	var loginRequest models.User
-	if err := c.ShouldBindJSON(&loginRequest); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if err := c.ShouldBind(&loginRequest); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
 	}
 
-	// Convert the base64-encoded FaceID string to a byte slice
 	decodedFaceID, err := base64.StdEncoding.DecodeString(string(loginRequest.FaceID))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid base64-encoded FaceID"})
@@ -65,7 +70,6 @@ func LoginWithFaceID(c *gin.Context) {
 		return
 	}
 
-	// Compare the decodedFaceID with the stored FaceID using facial recognition logic
 	if !facerecognition.CompareFacialEncodings(decodedFaceID, user.FaceID, 0.5) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid FaceID"})
 		return

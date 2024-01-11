@@ -9,15 +9,11 @@ import (
 var Db *gorm.DB
 
 func Connect() {
-
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN:                  "Asad:123@tcp(127.0.0.1:3306)/escope?charset=utf8mb4&parseTime=True&loc=Local",
-		PreferSimpleProtocol: true,
-	}), &gorm.Config{})
-
+	dsn := "host=localhost user=postgres password=123 dbname=escope port=5432 sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		panic(err.Error())
+		panic(err)
 	}
-	Db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{})
 	Db = db
 }

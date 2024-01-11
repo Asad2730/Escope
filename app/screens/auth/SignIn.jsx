@@ -31,8 +31,9 @@ export default function SignUp({ navigation }) {
 
 
     const handleSignIn = () => {
+        console.log('Ok...')
         const { email, password } = form;
-        dispatch(signUp({email:email.value.value,password:password.value,faceId:imageUrl}))     
+        dispatch(signUp({email:email.value,password:password.value,faceId:imageUrl}))     
     }
 
     return (

@@ -2,6 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Login from '../screens/auth/Login';
 import SignUp from '../screens/auth/SignIn';
+import { useSelector } from 'react-redux';
 
 
 
@@ -10,8 +11,8 @@ const Stack = createNativeStackNavigator();
 
 
 export default function Navigation() {
-
-    const isLogin = useSelector((state) => state.auth.isLogin);
+    
+    // const isLogin = useSelector((state) => state.auth.isLogin);
 
     return (
         <NavigationContainer>
