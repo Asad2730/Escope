@@ -2,8 +2,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 
-
-const db_url = 'http://192.168.0.147:3000'
+const ip = '192.168.10.13'
+const db_url = `http://${ip}:3000`
 
 const config = {
   headers: {
@@ -16,9 +16,9 @@ export const signUp = createAsyncThunk(
   'auth/signUp',
   async ({ email, password, faceId }, thunkAPI) => {
     try {
-     
+
       let form_data = new FormData();
-     
+
       form_data.append('email', email);
       form_data.append('password', password);
       form_data.append('face_id', {
@@ -28,12 +28,10 @@ export const signUp = createAsyncThunk(
       });
 
       const { data } = await axios.post(`${db_url}/createUser`, form_data, config);
-    
+
       return data;
     } catch (error) {
-      console.log('err',error)
-      console.log('err',error.response?.data)
-      console.log('err',error.message)
+
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }

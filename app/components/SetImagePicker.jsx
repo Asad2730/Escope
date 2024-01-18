@@ -4,8 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 export const setImagePicker = async () => {
     let result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
+        allowsEditing: false,
         quality: 1,
     });
 

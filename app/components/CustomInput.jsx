@@ -7,8 +7,11 @@ import { colors } from '../utils/colors'
 export default function CustomInput({PlaceHolder, Type, OnChange, Secure ,Value,Field}) {
    
     const handleOnChange = (text) => {
-        
-    }
+        OnChange((prev) => ({
+          ...prev,
+          [Field]: { ...prev[Field], value: text },
+        }));
+      };
 
     return (
         <TextInput

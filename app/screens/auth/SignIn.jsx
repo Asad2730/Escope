@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { View, Text, StyleSheet, Pressable, Image } from 'react-native'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { colors } from '../../utils/colors'
@@ -30,11 +30,25 @@ export default function SignUp({ navigation }) {
       };
 
 
-    const handleSignIn = () => {
-        console.log('Ok...')
-        const { email, password } = form;
-        dispatch(signUp({email:email.value,password:password.value,faceId:imageUrl}))     
-    }
+      const handleSignIn = async () => {
+        try {
+          const { email, password } = form;
+          let data = await dispatch(signUp({ email: email.value, password: password.value, faceId: imageUrl }));
+      
+          data && resetForm();
+        } catch (ex) {
+           console.log('ex',ex)
+        }
+      };
+      
+
+      const resetForm = () => {
+        setForm({
+          email: { value: '', placeholder: 'user email', type: 'email-address' },
+          password: { value: '', placeholder: 'user password', secure: true },
+        });
+        setImage(null);
+      };
 
     return (
         <View style={styles.container}>
