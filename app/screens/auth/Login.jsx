@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, Text, StyleSheet,Pressable } from 'react-native'
+import { View, Text, StyleSheet,Pressable,Image } from 'react-native'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { colors } from '../../utils/colors'
 import CustomInput from '../../components/CustomInput'
@@ -31,6 +31,7 @@ export default function Login({ navigation }) {
 
     const handleLoginWithPassword = () => {
         let obj = { email: form.email.value, password: form.password.value }
+        console.log('obj',obj)
         dispatch(loginWithEmailPassword(obj))
     }
   
@@ -42,7 +43,7 @@ export default function Login({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.secondary_container}>
-                <Text style={styles.myText}>SignIn</Text>
+                <Text style={styles.myText}>LogIn</Text>
             </View>
             <View style={styles.input_container}>
               
@@ -112,5 +113,18 @@ const styles = StyleSheet.create({
         height: hp('10%'),
         width: wp('100%'),
     },
-
+    imageWrapper: {
+        width: 150,
+        height: 150,
+        borderRadius: 75,
+        overflow: 'hidden',
+        backgroundColor: 'black',
+    },
+    circularImage: {
+        width: '100%',
+        height: '100%',
+    },
+    placeholder: {
+        flex: 1,
+    },
 });

@@ -28,7 +28,7 @@ export const signUp = createAsyncThunk(
       });
 
       const { data } = await axios.post(`${db_url}/createUser`, form_data, config);
-
+     
       return data;
     } catch (error) {
 
@@ -42,15 +42,15 @@ export const loginWithFaceID = createAsyncThunk(
   async ({ email, faceId }, thunkAPI) => {
     try {
       let form_data = new FormData();
-
       form_data.append('email', email);
-      form_data.append('faceId', {
+      form_data.append('face_id', {
         uri: faceId,
-        name: 'photo.jpg',
+        name: `${email}.jpg`,
         type: 'image/jpg',
       });
 
       const { data } = await axios.post(`${db_url}/LoginWithFaceID`, form_data, config);
+     
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
