@@ -1,9 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { db_url } from '../../utils/ip';
 
-
-const ip = '192.168.10.13'
-const db_url = `http://${ip}:3000`
 
 const config = {
   headers: {
@@ -26,12 +24,13 @@ export const signUp = createAsyncThunk(
         name: `${email}.jpg`,
         type: 'image/jpg',
       });
-
+    
       const { data } = await axios.post(`${db_url}/createUser`, form_data, config);
-     
+      thunkAPI.dispatch(signUp.fulfilled(data));
       return data;
     } catch (error) {
-
+      thunkAPI.dispatch(error);
+      thunkAPI.dispatch(signUp.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -50,9 +49,11 @@ export const loginWithFaceID = createAsyncThunk(
       });
 
       const { data } = await axios.post(`${db_url}/LoginWithFaceID`, form_data, config);
-     
+      thunkAPI.dispatch(loginWithFaceID.fulfilled(data));
       return data;
     } catch (error) {
+      thunkAPI.dispatch(error);
+      thunkAPI.dispatch(loginWithFaceID.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -64,8 +65,10 @@ export const loginWithEmailPassword = createAsyncThunk(
     try {
       let obj = { email, password };
       const { data } = await axios.post(`${db_url}/LoginWithEmailPassword`, obj);
+      thunkAPI.dispatch(loginWithEmailPassword.fulfilled(data));
       return data;
     } catch (error) {
+      thunkAPI.dispatch(loginWithEmailPassword.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }

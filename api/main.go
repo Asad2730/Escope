@@ -14,6 +14,7 @@ func main() {
 
 	r := gin.Default()
 	routes.UserAuthRoutes(r)
+	routes.MessageRoute(r)
 	r.Run("0.0.0.0:3000")
 
 }

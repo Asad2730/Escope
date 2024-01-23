@@ -31,7 +31,6 @@ export default function Login({ navigation }) {
 
     const handleLoginWithPassword = () => {
         let obj = { email: form.email.value, password: form.password.value }
-        console.log('obj',obj)
         dispatch(loginWithEmailPassword(obj))
     }
   

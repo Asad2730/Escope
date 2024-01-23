@@ -1,4 +1,3 @@
-
 import { createSlice } from '@reduxjs/toolkit';
 import { loginWithFaceID, signUp, loginWithEmailPassword } from './authThunk';
 
@@ -11,25 +10,45 @@ const authSlice = createSlice({
   },
   reducers: {},
   extraReducers: (builder) => {
-    builder
-      .addMatcher(
-        (action) => [loginWithFaceID.fulfilled, signUp.fulfilled, loginWithEmailPassword.fulfilled].includes(action.type),
-        (state, action) => {
-          state.user = action.payload;
-          state.loading = false;
-          state.error = null;
-        }
-      )
-      .addMatcher(
-        (action) => [loginWithFaceID.rejected, signUp.rejected, loginWithEmailPassword.rejected].includes(action.type),
-        (state, action) => {
-          state.error = action.error.message;
-        }
-      )
-      .addMatcher(
-        (action) => [loginWithFaceID.pending, signUp.pending, loginWithEmailPassword.pending].includes(action.type),
-        (state) => { state.loading = true }
-      )
+    builder.addCase(loginWithEmailPassword.fulfilled, (state, action) => {
+      state.error = null;
+      state.loading = false;
+      state.user = action.payload;
+    })
+    builder.addCase(loginWithFaceID.fulfilled, (state, action) => {
+      state.error = null;
+      state.loading = false;
+      state.user = action.payload;
+    })
+    builder.addCase(signUp.fulfilled, (state, action) => {
+      state.error = null;
+      state.loading = false;
+      state.user = action.payload;
+    })
+
+    builder.addCase(loginWithEmailPassword.pending, (state, action) => {
+      state.loading = true;
+    })
+    builder.addCase(loginWithFaceID.pending, (state, action) => {
+      state.loading = true;;
+    })
+    builder.addCase(signUp.pending, (state, action) => {
+      state.loading = true;
+    })
+
+    builder.addCase(loginWithEmailPassword.rejected, (state, action) => {
+      state.error = action.error.message;
+      state.loading = false;
+    })
+    builder.addCase(loginWithFaceID.rejected, (state, action) => {
+      state.error = action.error.message;
+      state.loading = false;
+    })
+    builder.addCase(signUp.rejected, (state, action) => {
+      state.error = action.error.message;
+      state.loading = false;
+    })
+
   },
 });
 

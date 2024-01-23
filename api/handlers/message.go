@@ -19,7 +19,7 @@ var upgrader = websocket.Upgrader{
 var clients = make(map[*websocket.Conn]uint)
 var broadcast = make(chan models.Message)
 
-func handleConnections(c *gin.Context) {
+func HandleMSGConnections(c *gin.Context) {
 	var msg models.Message
 
 	if err := c.ShouldBindJSON(&msg); err != nil {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, FlatList, SafeAreaView, Text, KeyboardAvoidingView, Platform } from 'react-native';
-import { Colors } from '../../utils/colors';
+import { colors } from '../../utils/colors';
 import CustomInput from '../../components/CustomInput';
 import { Feather } from '@expo/vector-icons'; 
 import { MaterialCommunityIcons } from '@expo/vector-icons'; 
@@ -68,7 +68,7 @@ export default function MsgDetail() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.secondary_color,
+    backgroundColor: colors.secondary_color,
   },
   safeContainer: {
     flex: 1,
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   cardTo: {
-    backgroundColor: Colors.card_primary,
+    backgroundColor: colors.card_primary,
     padding: 16,
     margin: 8,
     borderRadius: 8,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     maxWidth: '70%',
   },
   cardFrom: {
-    backgroundColor: Colors.card_secondary,
+    backgroundColor: colors.card_secondary,
     padding: 16,
     margin: 8,
     borderRadius: 8,

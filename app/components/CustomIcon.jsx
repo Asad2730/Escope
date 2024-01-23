@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, View, Text, StyleSheet, Pressable } from 'react-native';
-import { Colors } from '../utils/colors';
+import { colors } from '../utils/colors';
 
 const url = 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80';
 
@@ -19,7 +19,7 @@ export default function CustomIcon({ userName, onClick }) {
 
 const styles = StyleSheet.create({
   itemName: {
-    color: Colors.txt_white,
+    color: colors.txt_white,
     fontSize: 15,
     marginLeft: 12,
     paddingTop:10

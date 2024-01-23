@@ -1,8 +1,10 @@
 import React from 'react'
 import { ImageBackground, View, Text, StyleSheet, Dimensions, Image, Pressable, FlatList, SafeAreaView } from 'react-native';
-import { Colors } from '../../utils/colors';
+import { colors } from '../../utils/colors';
 import { Ionicons } from '@expo/vector-icons';
 import CustomInput from '../../components/CustomInput';
+import { useSelector } from "react-redux";
+
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -53,7 +55,9 @@ const DATA = [
 
 export default function Chats({navigation}) {
   
-
+  const loggedUser = useSelector((state)=>state.auth.user)
+  console.log('user is',loggedUser)
+  
   const renderItem = ({ item }) => (
     <Pressable style={styles.item} onPress={()=>navigation.navigate('chat-detail')}>
       <View style={styles.circularImageContainer}>
@@ -68,7 +72,7 @@ export default function Chats({navigation}) {
 
   return (
     <ImageBackground
-      source={require('../assets/bg-img.jpeg')}
+      source={require('../../assets/bg-img.jpeg')}
       style={styles.backgroundImage}
     >
       <View style={styles.top_container}>
@@ -77,7 +81,7 @@ export default function Chats({navigation}) {
       </View>
 
       <View style={styles.input_container}>
-        <CustomInput Logo={<Ionicons name="search" size={24} color={Colors.txt_grey} />} placeholder={'search'} />
+        <CustomInput Logo={<Ionicons name="search" size={24} color={colors.txt_grey} />} placeholder={'search'} />
       </View>
 
       <SafeAreaView style={styles.safeContainer}>
@@ -109,7 +113,7 @@ const styles = StyleSheet.create({
   leftTop: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: Colors.txt_white,
+    color: colors.txt_white,
   },
   input_container: {
     width: width * 0.95,
@@ -117,18 +121,18 @@ const styles = StyleSheet.create({
     margin: 10
   },
   title: {
-    color: Colors.txt_white,
+    color: colors.txt_white,
     fontSize: 20,
     paddingLeft: 10,
     marginBottom: 10,
   },
   itemName: {
-    color: Colors.txt_white,
+    color: colors.txt_white,
     fontSize: 17,
     marginLeft:10
   },
   itemDescription: {
-    color: Colors.txt_grey,
+    color: colors.txt_grey,
     fontSize: 13,
     marginTop:5,
     marginLeft:10
