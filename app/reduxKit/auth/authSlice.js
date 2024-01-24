@@ -8,7 +8,13 @@ const authSlice = createSlice({
     loading: false,
     error: null,
   },
-  reducers: {},
+  reducers: {
+    logout: (state) => {
+      state.error = null;
+      state.loading = false;
+      state.user =null;
+  },
+  },
   extraReducers: (builder) => {
     builder.addCase(loginWithEmailPassword.fulfilled, (state, action) => {
       state.error = null;
@@ -52,4 +58,6 @@ const authSlice = createSlice({
   },
 });
 
+
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;

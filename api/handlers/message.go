@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
+	"sync"
 
 	"github.com/Asad2730/Escope/connection"
 	"github.com/Asad2730/Escope/models"
@@ -14,57 +15,94 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true // Allow connections from any origin
+
+	},
 }
 
-var clients = make(map[*websocket.Conn]uint)
-var broadcast = make(chan models.Message)
+var connectionMutex sync.Mutex
+var clients = make(map[*websocket.Conn]bool)
+var broadcastChannel = make(chan models.Message)
 
-func HandleMSGConnections(c *gin.Context) {
-	var msg models.Message
+func init() {
+	go handleBroadcast()
+}
 
-	if err := c.ShouldBindJSON(&msg); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error Binding": err.Error()})
-		return
-	}
-
+func HandleWebSocket(c *gin.Context) {
+	fmt.Println("WebSocket connection from origin:", c.GetHeader("Origin"))
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error building connection": err.Error()})
+		fmt.Println("WebSocket upgrade error:", err.Error())
 		return
 	}
 	defer conn.Close()
 
-	senderID := msg.SenderID
+	connectionMutex.Lock()
+	clients[conn] = true
+	connectionMutex.Unlock()
 
-	clients[conn] = senderID
+	go func() {
+		for {
+			messageType, p, err := conn.ReadMessage()
+			if err != nil {
+				connectionMutex.Lock()
+				delete(clients, conn)
+				connectionMutex.Unlock()
+				break
+			}
+			handleMessage(messageType, p)
+		}
+	}()
+}
 
+func handleMessage(messageType int, payload []byte) {
+	var messageObject models.Message
+	err := json.Unmarshal(payload, &messageObject)
+	if err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return
+	}
+
+	fmt.Printf("Received message: %+v\n", messageObject)
+	handleChatMessage(messageObject)
+}
+
+func handleChatMessage(message models.Message) {
+	connectionMutex.Lock()
+	defer connectionMutex.Unlock()
+
+	err := connection.Db.Create(&message).Error
+	if err != nil {
+		fmt.Println("Error saving message to the database:", err)
+	}
+
+	// Send the received message to the broadcast channel
+	broadcastChannel <- message
+}
+
+func handleBroadcast() {
 	for {
+		message := <-broadcastChannel
 
-		err := conn.ReadJSON(&msg)
-		if err != nil {
-			fmt.Println(err)
-			delete(clients, conn)
-			break
+		connectionMutex.Lock()
+		for clientConn := range clients {
+			err := clientConn.WriteJSON(message)
+			if err != nil {
+				fmt.Println("Error broadcasting message:", err)
+			}
 		}
-
-		msg.CreatedAt = time.Now()
-		msg.SenderID = senderID
-		connection.Db.Create(&msg)
-
-		// Broadcast the message to the receiver (if available)
-		if receiverConn, ok := getReceiverConnection(msg.ReceiverID); ok {
-			receiverConn.WriteJSON(msg)
-		}
-
-		broadcast <- msg
+		connectionMutex.Unlock()
 	}
 }
 
-func getReceiverConnection(receiverID uint) (*websocket.Conn, bool) {
-	for conn, userID := range clients {
-		if userID == receiverID {
-			return conn, true
-		}
+func UserChatsForLoggedUser(c *gin.Context) {
+	var users []models.User
+	loggedUserEmail := c.Param("email")
+
+	if err := connection.Db.Where("email != ?", loggedUserEmail).Find(&users).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error building connection": err.Error()})
+		return
 	}
-	return nil, false
+	c.JSON(http.StatusOK, &users)
 }

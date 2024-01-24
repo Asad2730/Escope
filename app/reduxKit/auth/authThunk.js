@@ -1,6 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
-import { db_url } from '../../utils/ip';
+import { db_url } from '../../utils/helpers';
 
 
 const config = {
@@ -29,7 +29,6 @@ export const signUp = createAsyncThunk(
       thunkAPI.dispatch(signUp.fulfilled(data));
       return data;
     } catch (error) {
-      thunkAPI.dispatch(error);
       thunkAPI.dispatch(signUp.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
@@ -52,7 +51,6 @@ export const loginWithFaceID = createAsyncThunk(
       thunkAPI.dispatch(loginWithFaceID.fulfilled(data));
       return data;
     } catch (error) {
-      thunkAPI.dispatch(error);
       thunkAPI.dispatch(loginWithFaceID.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }

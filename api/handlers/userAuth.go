@@ -140,3 +140,9 @@ func LoginWithFaceID(c *gin.Context) {
 	}
 
 }
+
+func GetImage(c *gin.Context) {
+	filename := c.Param("filename")
+	c.File("uploads/" + filename)
+
+}

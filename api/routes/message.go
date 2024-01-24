@@ -6,5 +6,6 @@ import (
 )
 
 func MessageRoute(r *gin.Engine) {
-	r.GET("/MessageConnection", handlers.HandleMSGConnections)
+	r.GET("/ws", handlers.HandleWebSocket)
+	r.GET("/userChats/:email", handlers.UserChatsForLoggedUser)
 }
