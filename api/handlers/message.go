@@ -9,91 +9,105 @@ import (
 	"github.com/Asad2730/Escope/connection"
 	"github.com/Asad2730/Escope/models"
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
+	socketio "github.com/googollee/go-socket.io"
+	"github.com/googollee/go-socket.io/engineio"
+	"github.com/googollee/go-socket.io/engineio/transport"
+	"github.com/googollee/go-socket.io/engineio/transport/polling"
+	"github.com/googollee/go-socket.io/engineio/transport/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	CheckOrigin: func(r *http.Request) bool {
-		return true // Allow connections from any origin
-
-	},
-}
-
+var server *socketio.Server
 var connectionMutex sync.Mutex
-var clients = make(map[*websocket.Conn]bool)
+var clients = make(map[socketio.Conn]bool)
 var broadcastChannel = make(chan models.Message)
 
+var allowOriginFunc = func(r *http.Request) bool {
+	return true
+}
+
 func init() {
+
+	//server := socketio.NewServer(nil)
+
+	//configuring your Socket.IO server to use both polling and WebSocket transports with explicit options
+	// for allowing any origin. This should help in resolving potential cross-origin issues.
+
+	server := socketio.NewServer(&engineio.Options{
+		Transports: []transport.Transport{
+			&polling.Transport{
+				CheckOrigin: allowOriginFunc,
+			},
+			&websocket.Transport{
+				CheckOrigin: allowOriginFunc,
+			},
+		},
+	})
+
+	server.OnConnect("/", func(s socketio.Conn) error {
+		fmt.Println("Connecting to Server")
+		connectionMutex.Lock()
+		clients[s] = true
+		connectionMutex.Unlock()
+		return nil
+	})
+
+	server.OnEvent("/", "message", func(s socketio.Conn, msg string) {
+		var message models.Message
+		if err := json.Unmarshal([]byte(msg), &message); err != nil {
+			fmt.Println("Error decoding JSON:", err)
+			return
+		}
+
+		fmt.Printf("Received message: %+v\n", message)
+		handleChatMessage(message)
+	})
+
+	server.OnError("/", func(c socketio.Conn, err error) {
+		fmt.Println("Server error:", err.Error())
+	})
 	go handleBroadcast()
 }
 
 func HandleWebSocket(c *gin.Context) {
-	fmt.Println("WebSocket connection from origin:", c.GetHeader("Origin"))
-	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		fmt.Println("WebSocket upgrade error:", err.Error())
-		return
-	}
-	defer conn.Close()
-
-	connectionMutex.Lock()
-	clients[conn] = true
-	connectionMutex.Unlock()
-
-	go func() {
-		for {
-			messageType, p, err := conn.ReadMessage()
-			if err != nil {
-				connectionMutex.Lock()
-				delete(clients, conn)
-				connectionMutex.Unlock()
-				break
-			}
-			handleMessage(messageType, p)
-		}
-	}()
+	server.ServeHTTP(c.Writer, c.Request)
 }
 
 func handleMessage(messageType int, payload []byte) {
-	var messageObject models.Message
-	err := json.Unmarshal(payload, &messageObject)
+
+	var message models.Message
+	err := json.Unmarshal(payload, &message)
 	if err != nil {
 		fmt.Println("Error decoding JSON:", err)
 		return
 	}
 
-	fmt.Printf("Received message: %+v\n", messageObject)
-	handleChatMessage(messageObject)
+	fmt.Printf("Received message: %+v\n", message)
+	handleChatMessage(message)
+
 }
 
 func handleChatMessage(message models.Message) {
 	connectionMutex.Lock()
 	defer connectionMutex.Unlock()
-
 	err := connection.Db.Create(&message).Error
 	if err != nil {
 		fmt.Println("Error saving message to the database:", err)
 	}
-
 	// Send the received message to the broadcast channel
 	broadcastChannel <- message
 }
 
 func handleBroadcast() {
+
 	for {
 		message := <-broadcastChannel
-
 		connectionMutex.Lock()
-		for clientConn := range clients {
-			err := clientConn.WriteJSON(message)
-			if err != nil {
-				fmt.Println("Error broadcasting message:", err)
-			}
+		for clientsConn := range clients {
+			clientsConn.Emit("message", message)
 		}
 		connectionMutex.Unlock()
 	}
+
 }
 
 func UserChatsForLoggedUser(c *gin.Context) {

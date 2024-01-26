@@ -12,14 +12,13 @@ func init() {
 }
 
 func main() {
-	ip := "192.168.10.13"
+
 	r := gin.Default()
-
-	r.Use(cors.Default())
-
+	corsConfig := cors.DefaultConfig()
+	// corsConfig.AllowOrigins = []string{"http://exp://192.168.10.13:8081"}
+	corsConfig.AllowOrigins = []string{"*"}
+	r.Use(cors.New(corsConfig))
 	routes.UserAuthRoutes(r)
 	routes.MessageRoute(r)
-
-	// Use plain WebSocket for local development
-	r.Run(ip + ":3000")
+	r.Run("0.0.0.0:3000")
 }

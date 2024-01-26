@@ -1,9 +1,8 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Chats from "../screens/msg/Chats";
-import Calls from "../screens/msg/Calls";
-import { Entypo, Feather } from "@expo/vector-icons";
-import { FontAwesome5 } from '@expo/vector-icons'; 
+import ConvertCurrenct from "../screens/msg/ConvertCurrency";
+import { Entypo ,FontAwesome,FontAwesome5} from "@expo/vector-icons";
 import { colors } from "../utils/colors";
 import LogoutUser from '../screens/auth/Logout';
 
@@ -35,12 +34,12 @@ export default TabNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="calls"
-        component={Calls}
+        name="convertCurrency"
+        component={ConvertCurrenct}
         options={{
           tabBarLabel: "",
           tabBarIcon: ({ color }) => (
-            <Feather name="phone-call" size={24} color={color} />
+            <FontAwesome name="money" size={24} color={color} />
           ),
         }}
       />

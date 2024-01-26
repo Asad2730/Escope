@@ -4,7 +4,6 @@ import {
   StyleSheet,
   FlatList,
   SafeAreaView,
-  Text,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -13,43 +12,13 @@ import CustomInput from "../../components/CustomInput";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { web_socket_url } from "../../utils/helpers";
+import { temp_data } from "../../utils/temp";
+import { RenderChatItem } from "../../components/RenderChatItem";
 
-const DATA = [
-  {
-    id: 0,
-    to: "Hi, I need experienced UI/UX designer",
-    from: "Hi, I am interested!",
-  },
-  {
-    id: 1,
-    to: "How many years of experience do you have?",
-    from: "I have three years of experience. I can share you my work.",
-  },
-  {
-    id: 2,
-    to: "Ok, that would be nice, share your portfolio.",
-    from: "Okay, I will send you my email.",
-  },
-];
-
-const renderItem = ({ item }) => (
-  <View style={styles.card}>
-    <View style={{ alignItems: "flex-start" }}>
-      <View style={styles.cardTo}>
-        <Text>{item.to}</Text>
-      </View>
-    </View>
-
-    <View style={{ alignItems: "flex-end" }}>
-      <View style={styles.cardFrom}>
-        <Text>{item.from}</Text>
-      </View>
-    </View>
-  </View>
-);
+const DATA = temp_data;
 
 export default function MsgDetail() {
-  const [socket,setSocket] = useState(null);
+  const [socket, setSocket] = useState(null);
 
   const [msg, setMsg] = useState({
     message: { value: "" },
@@ -58,21 +27,6 @@ export default function MsgDetail() {
 
   useEffect(() => {
     const ws = new WebSocket(`${web_socket_url}/ws`);
-
-    //diable ssl
-    ws.binaryType = 'blob';
-    // WebSocket.prototype._connect = function () {
-    //   this._socket = new WebSocket(this._url);
-    //   this._socket.binaryType = this.binaryType;
-    
-    //   this._socket.onopen = this._handleOpen;
-    //   this._socket.onmessage = this._handleMessage;
-    //   this._socket.onerror = this._handleError;
-    //   this._socket.onclose = this._handleClose;
-    // };
-
-    //
-
     ws.onopen = () => console.log("connected");
 
     ws.onmessage = (event) => {
@@ -80,27 +34,37 @@ export default function MsgDetail() {
       setReceivedMessage(event.data);
     };
 
-    ws.onerror = (error) => {
-      console.log("WebSocket error :", error);
+    ws.onerror = (error) =>
+      console.log("WebSocket error:", error.message, error);
+
+    setSocket(ws);
+
+    ws.onclose = (event) => {
+      console.log("WebSocket closed:", event.code, event.reason, event);
     };
 
-   setSocket(ws);
     return () => {
+      console.log("Cleaning up WebSocket");
       ws.close();
     };
-}, []);
-
+  }, []);
 
   const sendMessage = () => {
-    if (socket != null) {
-      const messageObject = {
-        senderID: 123,
-        receiverID: 456,
-        content: msg.message.value,
-      };
-
-      // Convert the message object to a JSON string before sending
-      socket.send(JSON.stringify(messageObject));
+    switch (socket) {
+      case !null:
+        {
+          const messageObject = {
+            senderID: 123,
+            receiverID: 456,
+            content: msg.message.value,
+          };
+          // Convert the message object to a JSON string before sending
+          socket.send(JSON.stringify(messageObject));
+        }
+        break;
+      default:
+        console.log("socket is null", socket);
+        break;
     }
   };
 
@@ -109,7 +73,7 @@ export default function MsgDetail() {
       <SafeAreaView style={styles.safeContainer}>
         <FlatList
           data={DATA}
-          renderItem={renderItem}
+          renderItem={RenderChatItem}
           keyExtractor={(item) => item.id.toString()}
         />
       </SafeAreaView>
@@ -149,26 +113,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.secondary_color,
   },
   safeContainer: {
+    marginTop: 30,
     flex: 1,
-  },
-  card: {
-    margin: 20,
-    flex: 1,
-  },
-  cardTo: {
-    backgroundColor: colors.card_primary,
-    padding: 16,
-    margin: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    maxWidth: "70%",
-  },
-  cardFrom: {
-    backgroundColor: colors.card_secondary,
-    padding: 16,
-    margin: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    maxWidth: "70%",
   },
 });
