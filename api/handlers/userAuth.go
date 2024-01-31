@@ -144,13 +144,15 @@ func LoginWithFaceID(c *gin.Context) {
 			return
 		}
 
+		if err := os.Remove(path2); err != nil {
+			fmt.Println("Error removing temporary file:", err)
+		}
+
 		if bool(isSame) {
 			c.JSON(http.StatusOK, &user)
 		} else {
 			c.JSON(http.StatusNotFound, "images did not match")
 		}
-
-		// deleteImage(path2)
 
 	}
 
@@ -160,12 +162,4 @@ func GetImage(c *gin.Context) {
 	filename := c.Param("filename")
 	c.File("uploads/" + filename)
 
-}
-
-func deleteImage(path string) {
-	defer func() {
-		if err := os.Remove(path); err != nil {
-			fmt.Println("Error removing temporary file:", err)
-		}
-	}()
 }
