@@ -8,9 +8,14 @@ export const db_url = `http://${ip}:3000`
 
 export const get_Image_url = `${db_url}/images`
 
-export const extractNameFromEmail =  email  => { 
-    return email.split('@')[0]; 
+export const extractNameFromEmail = email => {
+    if (email && typeof email === 'string') {
+        return email.split('@')[0];
+    } else {
+        return 'Invalid Email';
+    }
 }
+
 
 
   

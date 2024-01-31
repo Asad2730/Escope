@@ -45,14 +45,17 @@ const authSlice = createSlice({
     builder.addCase(loginWithEmailPassword.rejected, (state, action) => {
       state.error = action.error.message;
       state.loading = false;
+      state.user = null;
     })
     builder.addCase(loginWithFaceID.rejected, (state, action) => {
       state.error = action.error.message;
       state.loading = false;
+      state.user = null;
     })
     builder.addCase(signUp.rejected, (state, action) => {
       state.error = action.error.message;
       state.loading = false;
+      state.user = null;
     })
 
   },

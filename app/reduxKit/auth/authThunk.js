@@ -50,7 +50,7 @@ export const loginWithFaceID = createAsyncThunk(
       const { data } = await axios.post(`${db_url}/LoginWithFaceID`, form_data, config);
       thunkAPI.dispatch(loginWithFaceID.fulfilled(data));
       return data;
-    } catch (error) {
+    } catch (error) { 
       thunkAPI.dispatch(loginWithFaceID.rejected(error));
       return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }

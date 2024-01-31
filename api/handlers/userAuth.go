@@ -1,7 +1,11 @@
 package handlers
 
 import (
+	"fmt"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"net/http"
 	"os"
@@ -9,7 +13,6 @@ import (
 	"github.com/Asad2730/Escope/connection"
 	"github.com/Asad2730/Escope/models"
 	"github.com/gin-gonic/gin"
-	"github.com/vitali-fedulov/images4"
 )
 
 func CreateUser(c *gin.Context) {
@@ -74,6 +77,7 @@ func LoginWithEmailPassword(c *gin.Context) {
 
 func LoginWithFaceID(c *gin.Context) {
 	var loginRequest models.User
+
 	if err := c.ShouldBind(&loginRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error binding": err.Error()})
 		return
@@ -108,35 +112,46 @@ func LoginWithFaceID(c *gin.Context) {
 			return
 		}
 
-		path1 := filepath.Join("uploads", user.FaceID)
-		path2 := filepath.Join("tempUploads", imageFile.Filename)
-
-		img1, err := images4.Open(path1)
+		path1, err := filepath.Abs(filepath.Join("uploads", user.FaceID))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error opening image file"})
+
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		img2, err := images4.Open(path2)
+		path2, err := filepath.Abs(filepath.Join("tempUploads", imageFile.Filename))
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error opening uploaded image file"})
+
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		icon1 := images4.Icon(img1)
-		icon2 := images4.Icon(img2)
+		pythonScript := "FaceAlgo/face.py"
 
-		if err := os.Remove(path2); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"Error removing temporary file": err.Error()})
+		cmd := exec.Command("python", pythonScript, path1, path2)
+
+		output, err := cmd.CombinedOutput()
+
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"Error executing Python script": err})
 			return
 		}
 
-		// Comparison. Images are not used directly. Icons are used instead, because they have tiny memory footprint and fast to compare. If you need to include images rotated right and left use func Similar90270.
-		if images4.Similar90270(icon1, icon2) {
+		isSame, err := strconv.ParseBool(strings.TrimSpace(string(output)))
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"Error parsing Python script output": err.Error()})
+			return
+		}
+
+		if bool(isSame) {
 			c.JSON(http.StatusOK, &user)
 		} else {
-			c.JSON(http.StatusUnauthorized, "Images are disticnt")
+			c.JSON(http.StatusNotFound, "images did not match")
 		}
+
+		deleteImage(path2)
+
 	}
 
 }
@@ -145,4 +160,12 @@ func GetImage(c *gin.Context) {
 	filename := c.Param("filename")
 	c.File("uploads/" + filename)
 
+}
+
+func deleteImage(path string) {
+	defer func() {
+		if err := os.Remove(path); err != nil {
+			fmt.Println("Error removing temporary file:", err)
+		}
+	}()
 }

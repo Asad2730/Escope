@@ -6,11 +6,10 @@ import { Entypo ,FontAwesome,FontAwesome5} from "@expo/vector-icons";
 import { colors } from "../utils/colors";
 import LogoutUser from '../screens/auth/Logout';
 
-
 const Tab = createBottomTabNavigator();
 
 export default TabNavigator = () => {
-
+  
  
   return (
     <Tab.Navigator

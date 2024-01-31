@@ -26,7 +26,15 @@ export default function MsgDetail() {
   const [receivedMessage, setReceivedMessage] = useState("");
 
   useEffect(() => {
-    const ws = new WebSocket(`${web_socket_url}/ws`);
+    const webSocketOptions = {
+      rejectUnauthorized: false, // Disable SSL certificate validation (for testing only)
+    };
+    
+    const ws1= WebSocket('',WebSocket.prototype.binaryType="blob")
+    let ws = new WebSocket(`${web_socket_url}/ws`,webSocketOptions);
+
+    ws.binaryType = "blob";
+    console.log('Protocal ',ws.protocol);
     ws.onopen = () => console.log("connected");
 
     ws.onmessage = (event) => {

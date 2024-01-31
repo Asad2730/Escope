@@ -15,8 +15,8 @@ func main() {
 
 	r := gin.Default()
 	corsConfig := cors.DefaultConfig()
-	// corsConfig.AllowOrigins = []string{"http://exp://192.168.10.13:8081"}
 	corsConfig.AllowOrigins = []string{"*"}
+
 	r.Use(cors.New(corsConfig))
 	routes.UserAuthRoutes(r)
 	routes.MessageRoute(r)
