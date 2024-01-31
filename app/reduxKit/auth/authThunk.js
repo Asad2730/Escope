@@ -46,7 +46,6 @@ export const loginWithFaceID = createAsyncThunk(
         name: `${email}.jpg`,
         type: 'image/jpg',
       });
-
       const { data } = await axios.post(`${db_url}/LoginWithFaceID`, form_data, config);
       thunkAPI.dispatch(loginWithFaceID.fulfilled(data));
       return data;

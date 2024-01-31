@@ -150,7 +150,7 @@ func LoginWithFaceID(c *gin.Context) {
 			c.JSON(http.StatusNotFound, "images did not match")
 		}
 
-		deleteImage(path2)
+		// deleteImage(path2)
 
 	}
 
