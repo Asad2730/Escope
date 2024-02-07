@@ -1,10 +1,10 @@
-const ip = '192.168.10.13'
-//wss
-export const web_socket_url = `ws://${ip}:3000`
-
-export const db_url = `http://${ip}:3000`
+const ip = '192.168.10.2';
+const port = '8080';
 
 
+export const web_socket_url = `ws://${ip}:${port}`
+
+export const db_url = `http://${ip}:${port}`
 
 export const get_Image_url = `${db_url}/images`
 

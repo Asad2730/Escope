@@ -20,5 +20,5 @@ func main() {
 	r.Use(cors.New(corsConfig))
 	routes.UserAuthRoutes(r)
 	routes.MessageRoute(r)
-	r.Run("0.0.0.0:3000")
+	r.Run("0.0.0.0:8080")
 }

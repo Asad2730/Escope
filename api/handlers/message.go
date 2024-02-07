@@ -26,13 +26,9 @@ var allowOriginFunc = func(r *http.Request) bool {
 }
 
 func init() {
+	// server = socketio.NewServer(nil)
 
-	//server := socketio.NewServer(nil)
-
-	//configuring your Socket.IO server to use both polling and WebSocket transports with explicit options
-	// for allowing any origin. This should help in resolving potential cross-origin issues.
-
-	server := socketio.NewServer(&engineio.Options{
+	server = socketio.NewServer(&engineio.Options{
 		Transports: []transport.Transport{
 			&polling.Transport{
 				CheckOrigin: allowOriginFunc,
@@ -42,9 +38,8 @@ func init() {
 			},
 		},
 	})
-
 	server.OnConnect("/", func(s socketio.Conn) error {
-		fmt.Println("Connecting to Server")
+		fmt.Println("Connecting to Server...")
 		connectionMutex.Lock()
 		clients[s] = true
 		connectionMutex.Unlock()
@@ -65,6 +60,11 @@ func init() {
 	server.OnError("/", func(c socketio.Conn, err error) {
 		fmt.Println("Server error:", err.Error())
 	})
+
+	server.OnDisconnect("/", func(s socketio.Conn, reason string) {
+		fmt.Println("closed", reason)
+	})
+
 	go handleBroadcast()
 }
 

@@ -12,10 +12,9 @@ import CustomInput from "../../components/CustomInput";
 import { Feather } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { web_socket_url } from "../../utils/helpers";
-import { temp_data } from "../../utils/temp";
 import { RenderChatItem } from "../../components/RenderChatItem";
 
-const DATA = temp_data;
+const DATA = [];
 
 export default function MsgDetail() {
   const [socket, setSocket] = useState(null);
@@ -26,31 +25,24 @@ export default function MsgDetail() {
   const [receivedMessage, setReceivedMessage] = useState("");
 
   useEffect(() => {
-    const webSocketOptions = {
-      rejectUnauthorized: false, // Disable SSL certificate validation (for testing only)
-    };
-    
-    const ws1= WebSocket('',WebSocket.prototype.binaryType="blob")
-    let ws = new WebSocket(`${web_socket_url}/ws`,webSocketOptions);
+    let ws = new WebSocket(`${web_socket_url}/ws`);
 
-    ws.binaryType = "blob";
-    console.log('Protocal ',ws.protocol);
-    ws.onopen = () => console.log("connected");
+    ws.onopen = () => console.log("WebSocket connected");
 
     ws.onmessage = (event) => {
       console.log("Received message from server:", event.data);
       setReceivedMessage(event.data);
     };
 
-    ws.onerror = (error) =>
-      console.log("WebSocket error:", error.message, error);
-
-    setSocket(ws);
+    ws.onerror = (error) => console.error("WebSocket error:", error.message);
 
     ws.onclose = (event) => {
-      console.log("WebSocket closed:", event.code, event.reason, event);
+      console.log("WebSocket closed:", event.code, event.reason);
     };
 
+    
+
+    setSocket(ws);
     return () => {
       console.log("Cleaning up WebSocket");
       ws.close();
